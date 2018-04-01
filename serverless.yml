@@ -26,6 +26,7 @@ provider:
   #  TICKET_TABLE_NAME: "${self:service}-${opt:stage, self:provider.stage}-crypto-tickets"
 plugins:
   - serverless-plugin-typescript
+  - serverless-plugin-include-dependencies
   - serverless-offline
   - serverless-aws-documentation
   #- serverless-domain-manager
@@ -35,8 +36,8 @@ package:
   include:
     - src/**/!(*.spec).js
     - node_modules/shortid/**/*.js
-  #exclude:
-  #  - node_modules/**/*
+  exclude:
+    - node_modules/**/*
 resources:
   Resources:
     CryptoTicketDBTable:
@@ -153,6 +154,7 @@ functions:
     description: Create and encrypt the ticket
     environment:
       TICKET_TABLE_NAME: "${self:service}-${opt:stage, self:provider.stage}-crypto-tickets"
+      ENCRYPTION_ALGORITHM: "aes-256-gcm"
     events:
       - http:
           path: crypto/create
@@ -168,6 +170,54 @@ functions:
                 description: Returned when the operation is completed successfully.
                 responseModels:
                   "application/json": CreateCryptoTicketResponse
+              - ${file(./swagger/error-responses/internal-server-error.yml)}
+  getCryptoTicket:
+    handler: src/crypto/crypto.getCryptoTicket
+    description: Get encrypt the ticket details
+    environment:
+      TICKET_TABLE_NAME: "${self:service}-${opt:stage, self:provider.stage}-crypto-tickets"
+      ENCRYPTION_ALGORITHM: "aes-256-gcm"
+    events:
+      - http:
+          path: crypto/details/{ticketId}
+          method: get
+          cors: true
+          request:
+              parameters:
+              paths:
+                  ticketId: true
+          documentation:
+            summary: Get the crypto ticket detail.
+            tags:
+              - Crypto
+            description: Returns the encrypted ticket.
+            methodResponses:
+              - statusCode: '200'
+                description: Ticket valid and return data.
+                responseModels:
+                  "application/json": GetCryptoTicketResponse
+              - ${file(./swagger/error-responses/internal-server-error.yml)}
+  decryptCryptoTicket:
+    handler: src/crypto/crypto.decryptCryptoTicket
+    description: Decrypt encrypt the ticket details
+    environment:
+      TICKET_TABLE_NAME: "${self:service}-${opt:stage, self:provider.stage}-crypto-tickets"
+      ENCRYPTION_ALGORITHM: "aes-256-gcm"
+    events:
+      - http:
+          path: crypto/decrypt
+          method: post
+          cors: true
+          documentation:
+            summary: Accept the password and decrypt the message to get clear text.
+            tags:
+              - Crypto
+            description: Returns the encrypted ticket.
+            methodResponses:
+              - statusCode: '200'
+                description: Return response message with clear text
+                responseModels:
+                  "application/json": GetCryptoTicketResponse
               - ${file(./swagger/error-responses/internal-server-error.yml)}
 custom:
   documentation: ${file(./swagger/documentation.yml)}

@@ -20,3 +20,4 @@ models:
   - ${file(./src/health/swagger/get-health-check.yml)}
   - ${file(./src/health/swagger/get-health-check-detailed.yml)}
   - ${file(./src/crypto/swagger/create-crypto-response.yml)}
+  - ${file(./src/crypto/swagger/get-crypto-response.yml)}

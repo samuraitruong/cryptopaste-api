@@ -1,0 +1,17 @@
+name: GetCryptoTicketResponse
+contentType: "application/json"
+schema:
+  type: object
+  properties:
+    id:
+      type: string
+      description: the unique ticket id.
+    expires:
+      type: number
+      description: epoch time when ticket expires.
+    text:
+      type: string
+      description: the encrypted data of original text.
+    expired:
+      type: boolean
+      description: Return true if the the ticket marked as one time read.

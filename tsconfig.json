@@ -1,9 +1,9 @@
 {
   "compilerOptions": {
     "module": "commonjs",
-    "target": "es6",
+    "target": "es5",
     "lib": [ 
-      "es6"
+      "es2015"
     ],
     "moduleResolution": "node",
     "rootDir": "./",
@@ -20,7 +20,7 @@
     "strict": true
   },
   "exclude": [ 
-    "node_modules",
+    "node_modules\\aws-sdk",
     "coverage"
    ]
 }
