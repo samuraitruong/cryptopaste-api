@@ -10,4 +10,4 @@ const repo: CryptoRepository = new CryptoRepository(ticketTableName);
 const service: CryptoService = new CryptoService(repo, process.env);
 const controller: CryptoController = new CryptoController(service);
 
-export const createCryptoJson: ApiHandler = controller.createCryptoJson;
+export const createCryptoTicket: ApiHandler = controller.createCryptoJson;

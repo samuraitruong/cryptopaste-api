@@ -1,12 +1,16 @@
-//import { APIGateway, AWSError } from 'aws-sdk';
+import { DynamoDB  } from 'aws-sdk';
 import { CreateCryptoTicketResult, CreateCryptoTicketRequest } from './crypto.interfaces'
 
 export class CryptoRepository {
   public constructor(private _ticketTableName: string) {
+    this._db = new DynamoDB.DocumentClient();
   }
 
-  public async createTicket(ticket: CreateCryptoTicketRequest): Promise<CreateCryptoTicketResult> {
-    console.log(this._ticketTableName);
-    return { id:'12', expires:17890234 }
+  public async createTicket(ticket: CreateCryptoTicketRequest): Promise<void> {
+    const params = {
+      TableName: this._ticketTableName,
+      Item: ticket
+    }
+    await dynamoDb.put(params).toPromise()
   }
 }

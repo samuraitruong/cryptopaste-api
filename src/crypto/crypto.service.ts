@@ -1,4 +1,5 @@
 import { AWSError } from 'aws-sdk';
+import ShortId from 'shortid'
 import { ErrorCode } from '../../shared/error-codes';
 import { ConfigurationErrorResult, ForbiddenResult, InternalServerErrorResult, NotFoundResult } from '../../shared/errors';
 import { CreateCryptoTicketResult, CreateCryptoTicketRequest } from './crypto.interfaces';
@@ -10,11 +11,12 @@ export class CryptoService {
 
   public async createCryptoTicket(ticket: CreateCryptoTicketRequest): Promise<CreateCryptoTicketResult> {
     //generate and encrypt
+    ticket.id  = ShortId.generate()
     //adjust expired time
     //
     try{
-        const result =  this._repo.createTicket(ticket)
-        return result;
+        await this._repo.createTicket(ticket)
+        return {id: ticket.id, expires: ticket.expires};
     }
     catch(error) {
         if (error.code === 'AccessDeniedException') {

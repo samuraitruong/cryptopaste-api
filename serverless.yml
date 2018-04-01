@@ -11,6 +11,17 @@ provider:
         - "apigateway:GET"
       Resource:
         - "arn:aws:apigateway:${self:provider.region}::/restapis*"
+    - Effect: Allow
+      Action:
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+        - dynamodb:BatchWriteItem
+      Resource: 
+        - "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:service}-${opt:stage, self:provider.stage}-crypto-tickets"
   #environment:
   #  TICKET_TABLE_NAME: "${self:service}-${opt:stage, self:provider.stage}-crypto-tickets"
 plugins:
@@ -22,11 +33,29 @@ plugins:
 
 package:
   include:
-    src/**/!(*.spec).js
-  exclude:
-    - node_modules/**/*
-
-functions:
+    - src/**/!(*.spec).js
+    - node_modules/shortid/**/*.js
+  #exclude:
+  #  - node_modules/**/*
+resources:
+  Resources:
+    CryptoTicketDBTable:
+      Type: 'AWS::DynamoDB::Table'
+      DeletionPolicy: Retain
+      Properties:
+        AttributeDefinitions:
+          -
+            AttributeName: id
+            AttributeType: S
+        KeySchema:
+          -
+            AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        TableName: "${self:service}-${opt:stage, self:provider.stage}-crypto-tickets"
+functions:  
   getSwaggerJson:
     handler: src/swagger/swagger.getSwaggerJson
     description: Returns the Swagger documentation of the API in JSON format.

@@ -57,5 +57,9 @@
     "ts-mockito": "^2.2.5",
     "ts-node": "^5.0.0",
     "tslint": "^5.8.0"
+  },
+  "dependencies": {
+    "@types/shortid": "^0.0.29",
+    "shortid": "^2.2.8"
   }
 }
