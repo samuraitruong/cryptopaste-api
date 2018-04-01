@@ -1,0 +1,61 @@
+{
+  "name": "lambda-typescript",
+  "version": "1.0.0",
+  "description": "A sample to create AWS Lambda functions in TypeScript with Serverless.",
+  "main": "handler.js",
+  "scripts": {
+    "analyse": "npm run lint && npm run test",
+    "clean": "rimraf .build .serverless .nyc_output coverage",
+    "coverage": "nyc report --reporter=text-lcov | coveralls",
+    "prebuild": "npm run clean && npm run analyse",
+    "build": "serverless package",
+    "predeploy": "npm run clean && npm run analyse",
+    "deploy": "serverless deploy",
+    "deploy:init": "serverless create_domain",
+    "postdeploy": "npm run test:integration",
+    "lint": "tslint --project . --format verbose",
+    "start": "serverless offline start",
+    "pretest": "npm run clean",
+    "test": "nyc mocha",
+    "test:integration": "mocha --opts ./test/integration/mocha.opts"
+  },
+  "keywords": [
+    "aws",
+    "lambda",
+    "serverless",
+    "tslint",
+    "typescript"
+  ],
+  "author": "György Balássy",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/balassy/aws-lambda-typescript.git"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^0.0.34",
+    "@types/chai": "^4.0.4",
+    "@types/chance": "^1.0.0",
+    "@types/mocha": "^5.0.0",
+    "@types/node": "^9.3.0",
+    "@types/request": "^2.0.8",
+    "@types/request-promise-native": "^1.0.10",
+    "aws-sdk": "^2.149.0",
+    "chai": "^4.1.2",
+    "chance": "^1.0.12",
+    "coveralls": "^3.0.0",
+    "mocha": "^5.0.0",
+    "nyc": "^11.3.0",
+    "request-promise-native": "^1.0.5",
+    "rimraf": "^2.6.2",
+    "serverless-aws-documentation": "^1.0.0",
+    "serverless-domain-manager": "2.3.6",
+    "serverless-offline": "^3.16.0",
+    "serverless-plugin-typescript": "^1.1.3",
+    "serverless-stack-output": "^0.2.0",
+    "source-map-support": "^0.5.0",
+    "ts-mockito": "^2.2.5",
+    "ts-node": "^5.0.0",
+    "tslint": "^5.8.0"
+  }
+}

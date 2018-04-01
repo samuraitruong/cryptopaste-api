@@ -1,0 +1,11 @@
+name: CreateCryptoTicketResponse
+contentType: "application/json"
+schema:
+  type: object
+  properties:
+    id:
+      type: string
+      description: the unique ticket id.
+    expiresIn:
+      type: number
+      description: epoch time when ticket expires.

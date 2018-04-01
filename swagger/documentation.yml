@@ -1,0 +1,21 @@
+api:
+  info:
+    version: '1'
+    title: Crypto Paste API
+    description: A quick project to show how to protect plain text and share it, and destroy it automatically.
+    contact:
+      name: Truong Nguyen
+      url: https://www.linkedin.com/in/samuraitruong
+    license:
+      name: MIT
+      url: https://github.com/samuraitruong/cryptopaste-api/master/LICENSE
+  tags:
+    - name: Crypto Paste
+      description: Protect and share plain text .
+    - name: CryptoPaste
+      description: Crypto paste cloud solution.
+models:
+  - ${file(./swagger/error-responses/error-response.yml)}
+  - ${file(./src/cities/swagger/get-city-response.yml)}
+  - ${file(./src/health/swagger/get-health-check.yml)}
+  - ${file(./src/health/swagger/get-health-check-detailed.yml)}
