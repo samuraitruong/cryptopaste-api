@@ -27,5 +27,9 @@ export interface GetCryptoTicketResponse {
     text:string,
     expires:number,
     created: number,
-    expired: boolean
+    expired: boolean,
+    oneTime?: boolean
+}
+export interface DeleteCryptoTicketRequest extends DecryptCryptoTicketRequest {
+    
 }

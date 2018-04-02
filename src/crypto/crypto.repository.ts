@@ -24,4 +24,16 @@ export class CryptoRepository {
     const result = await this._db.get(params).promise()
     return <CryptoTicket> result.Item
   }
+
+  public async deleteTicket(ticketId:string) : Promise<boolean> {
+     const params = {
+      TableName: this._ticketTableName,
+      Key: {
+        id: ticketId
+      },
+    }
+    const result = await this._db.delete(params).promise()
+    return true
+  }
+
 }

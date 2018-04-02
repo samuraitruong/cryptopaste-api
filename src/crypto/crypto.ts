@@ -14,3 +14,4 @@ const controller: CryptoController = new CryptoController(service);
 export const createCryptoTicket: ApiHandler = controller.createCryptoJson;
 export const getCryptoTicket : ApiHandler = controller.getCryptoJson;
 export const decryptCryptoTicket : ApiHandler = controller.decryptCryptoJson
+export const deleteCryptoTicket : ApiHandler = controller.deleteCryptoJson

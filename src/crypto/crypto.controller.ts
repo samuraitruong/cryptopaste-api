@@ -1,7 +1,8 @@
 import { ApiCallback, ApiContext, ApiEvent, ApiHandler } from '../../shared/api.interfaces';
 import { ConfigurationErrorResult, ErrorResult, ForbiddenResult, NotFoundResult } from '../../shared/errors';
+import { ErrorCode } from '../../shared/error-codes';
 import { ResponseBuilder } from '../../shared/response-builder';
-import { CreateCryptoTicketResult, CreateCryptoTicketRequest, GetCryptoTicketResponse, DecryptCryptoTicketRequest } from './crypto.interfaces';
+import { CreateCryptoTicketResult, CreateCryptoTicketRequest, GetCryptoTicketResponse, DecryptCryptoTicketRequest , DeleteCryptoTicketRequest} from './crypto.interfaces';
 import { CryptoService } from './crypto.service';
 
 export class CryptoController {
@@ -17,7 +18,7 @@ export class CryptoController {
       }
       catch(error) {
         console.log(error)
-        if (error instanceof NotFoundResult) {
+        if (error.code == ErrorCode.MissingRecord) {
             return ResponseBuilder.notFound(error.code, error.description, callback);
         }
 
@@ -38,11 +39,14 @@ export class CryptoController {
 
       try{
         const result = await this._service.getCryptoTicket(ticketId);
+        if(result == null) {
+            return ResponseBuilder.notFound(ErrorCode.MissingRecord, "Could not find item ID: " + ticketId , callback);
+        }
         return ResponseBuilder.ok<GetCryptoTicketResponse>(result, callback);
       }
       catch(error) {
         console.log(error)
-        if (error instanceof NotFoundResult) {
+        if (error.code == ErrorCode.MissingRecord) {
             return ResponseBuilder.notFound(error.code, error.description, callback);
         }
 
@@ -79,6 +83,30 @@ public decryptCryptoJson: ApiHandler = async (event: ApiEvent, context: ApiConte
     }
 
     return ResponseBuilder.internalServerError(error, callback);
+    }
+  }
+  public deleteCryptoJson: ApiHandler = async (event: ApiEvent, context: ApiContext, callback: ApiCallback): Promise<void> => {
+    const model : DeleteCryptoTicketRequest = JSON.parse(<string>event.body);
+
+    try{
+        const result = await this._service.deleteCryptoTicket(model);
+        return ResponseBuilder.ok<GetCryptoTicketResponse>(result, callback);
+    }
+    catch(error) {
+        console.log(error)
+        if (error.code == ErrorCode.MissingRecord) {
+            return ResponseBuilder.notFound(error.code, error.description, callback);
+        }
+
+        if (error instanceof ForbiddenResult) {
+            return ResponseBuilder.forbidden(error.code, error.description, callback);
+        }
+
+        if (error instanceof ConfigurationErrorResult) {
+            return ResponseBuilder.configurationError(error.code, error.description, callback);
+        }
+
+        return ResponseBuilder.internalServerError(error, callback);
     }
   }
 }

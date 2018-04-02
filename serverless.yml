@@ -36,6 +36,7 @@ package:
   include:
     - src/**/!(*.spec).js
     - node_modules/shortid/**/*.js
+    #- node_modules/moment/**/*.js
   exclude:
     - node_modules/**/*
 resources:
@@ -216,6 +217,28 @@ functions:
             methodResponses:
               - statusCode: '200'
                 description: Return response message with clear text
+                responseModels:
+                  "application/json": GetCryptoTicketResponse
+              - ${file(./swagger/error-responses/internal-server-error.yml)}
+  deleteCryptoTicket:
+    handler: src/crypto/crypto.deleteCryptoTicket
+    description: Delete the crypto ticket
+    environment:
+      TICKET_TABLE_NAME: "${self:service}-${opt:stage, self:provider.stage}-crypto-tickets"
+      ENCRYPTION_ALGORITHM: "aes-256-gcm"
+    events:
+      - http:
+          path: crypto/delete
+          method: post
+          cors: true
+          documentation:
+            summary: Accept the existing ticket ID and password, if pasword and id are matched. the token will be remove from database
+            tags:
+              - Crypto
+            description: If request is accepted. The crypto ticket will be remove.
+            methodResponses:
+              - statusCode: '200'
+                description: Request accepted and ticket been removed.
                 responseModels:
                   "application/json": GetCryptoTicketResponse
               - ${file(./swagger/error-responses/internal-server-error.yml)}
