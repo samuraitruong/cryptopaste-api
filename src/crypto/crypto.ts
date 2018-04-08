@@ -15,3 +15,4 @@ export const createCryptoTicket: ApiHandler = controller.createCryptoJson;
 export const getCryptoTicket : ApiHandler = controller.getCryptoJson;
 export const decryptCryptoTicket : ApiHandler = controller.decryptCryptoJson
 export const deleteCryptoTicket : ApiHandler = controller.deleteCryptoJson
+export const deleteCryptoTicketSchedule: ApiHandler = controller.deleteCryptoTicketSchedule
