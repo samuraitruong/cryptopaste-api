@@ -9,14 +9,7 @@ import { CryptoRepository } from './crypto.repository';
 import { Encryption } from '../services/encryption'
 import { Util } from '../services/util'
 
-// Fetch the service account key JSON file contents
-const serviceAccount = require("./firebase-admin-token.json");
 
-// Initialize the app with a service account, granting admin privileges
-fbAdmin.initializeApp({
-  credential: fbAdmin.credential.cert(serviceAccount),
-  databaseURL: "https://cryptobin-e87cc.firebaseio.com"
-});
 
 export class CryptoService {
   public constructor(private _repo: CryptoRepository,
@@ -36,6 +29,15 @@ export class CryptoService {
     ticket.text = encryptResponse.content;
     try{
         await this._repo.createTicket(ticket);
+
+        // Fetch the service account key JSON file contents
+        const serviceAccount = require("./firebase-admin-token.json");
+
+        // Initialize the app with a service account, granting admin privileges
+        fbAdmin.initializeApp({
+          credential: fbAdmin.credential.cert(serviceAccount),
+          databaseURL: 'https://cryptobin-e87cc.firebaseio.com',
+        }, ticket.id);
 
         // As an admin, the app has access to read and write all data, regardless of Security Rules
         const db = fbAdmin.database();
