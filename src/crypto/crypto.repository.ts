@@ -2,6 +2,7 @@ import { DynamoDB  } from 'aws-sdk';
 import { CreateCryptoTicketResult, CreateCryptoTicketRequest } from './crypto.interfaces'
 
 export class CryptoRepository {
+  private _db: DynamoDB.DocumentClient;
   public constructor(private _ticketTableName: string) {
     this._db = new DynamoDB.DocumentClient();
   }

@@ -10,7 +10,7 @@ export class CryptoService {
   }
 
   public async createCryptoTicket(ticket: CreateCryptoTicketRequest): Promise<CreateCryptoTicketResult> {
-    //generate and encrypt
+    // generate and encrypt
     ticket.id  = ShortId.generate()
     //adjust expired time
     //
@@ -29,6 +29,6 @@ export class CryptoService {
 
         throw new InternalServerErrorResult(error.name, error.message);
     }
-    
+
   }
 }

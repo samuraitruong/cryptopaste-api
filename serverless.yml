@@ -20,23 +20,24 @@ provider:
         - dynamodb:UpdateItem
         - dynamodb:DeleteItem
         - dynamodb:BatchWriteItem
-      Resource: 
+      Resource:
         - "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:service}-${opt:stage, self:provider.stage}-crypto-tickets"
   #environment:
   #  TICKET_TABLE_NAME: "${self:service}-${opt:stage, self:provider.stage}-crypto-tickets"
 plugins:
-  - serverless-plugin-typescript
+  - serverless-webpack
+  #- serverless-plugin-typescript
   - serverless-offline
   - serverless-aws-documentation
   #- serverless-domain-manager
   - serverless-stack-output
 
-package:
-  include:
-    - src/**/!(*.spec).js
-    - node_modules/shortid/**/*.js
-  #exclude:
-  #  - node_modules/**/*
+# package:
+  # include:
+  #   - src/**/!(*.spec).js
+  #   - node_modules/shortid/**/*.js
+  # exclude:
+  #   - node_modules/**/*
 resources:
   Resources:
     CryptoTicketDBTable:
@@ -55,7 +56,7 @@ resources:
           ReadCapacityUnits: 1
           WriteCapacityUnits: 1
         TableName: "${self:service}-${opt:stage, self:provider.stage}-crypto-tickets"
-functions:  
+functions:
   getSwaggerJson:
     handler: src/swagger/swagger.getSwaggerJson
     description: Returns the Swagger documentation of the API in JSON format.
