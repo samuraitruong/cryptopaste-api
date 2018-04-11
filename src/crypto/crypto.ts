@@ -9,7 +9,7 @@ import { Encryption } from '../services/encryption'
 const ticketTableName = <string>(process.env.TICKET_TABLE_NAME)
 const repo: CryptoRepository = new CryptoRepository(ticketTableName);
 const encryption: Encryption = new Encryption(process.env.ENCRYPTION_ALGORITHM )
-const service: CryptoService = new CryptoService(repo, encryption, process.env);
+const service: CryptoService = new CryptoService(process.env.FIREBASE_WEBHOOK_URL, repo, encryption, process.env);
 const controller: CryptoController = new CryptoController(service);
 export const createCryptoTicket: ApiHandler = controller.createCryptoJson;
 export const getCryptoTicket : ApiHandler = controller.getCryptoJson;

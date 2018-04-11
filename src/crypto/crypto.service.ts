@@ -1,14 +1,15 @@
-import { AWSError } from 'aws-sdk';
+import { AWSError } from 'aws-sdk'
 import { generate } from 'shortid'
+
 import { ErrorCode } from '../../shared/error-codes';
 import { ConfigurationErrorResult, ForbiddenResult, InternalServerErrorResult, NotFoundResult } from '../../shared/errors';
 import { CreateCryptoTicketResult, CreateCryptoTicketRequest, GetCryptoTicketResponse, DecryptCryptoTicketRequest, DeleteCryptoTicketRequest } from './crypto.interfaces';
 import { CryptoRepository } from './crypto.repository';
 import { Encryption } from '../services/encryption'
 import { Util } from '../services/util'
-
+import Axios from 'axios'
 export class CryptoService {
-  public constructor(private _repo: CryptoRepository,
+  public constructor(private _webhook:string, private _repo: CryptoRepository,
     private _encryption : Encryption,
     private _env: NodeJS.ProcessEnv) {
   }
@@ -23,21 +24,23 @@ export class CryptoService {
     ticket.iv = encryptResponse.iv;
     ticket.tag = encryptResponse.tag;
     ticket.text = encryptResponse.content;
-    try{
+    try {
         await this._repo.createTicket(ticket);
-        return {id: ticket.id, expires: ticket.expires};
-    }
-    catch(error) {
+        if(this._webhook !== undefined) {
+          await Axios.post(this._webhook, {mode: 'encrypt'})
+        }
+        return {id: ticket.id , expires: ticket.expires};
+    }catch(error) {
       console.log(error)
-        if (error.code === 'AccessDeniedException') {
-          throw new ForbiddenResult(ErrorCode.MissingPermission, error.message);
-        }
+      if (error.code === 'AccessDeniedException') {
+        throw new ForbiddenResult(ErrorCode.MissingPermission, error.message);
+      }
 
-        if (error instanceof NotFoundResult) {
-          throw error;
-        }
+      if (error instanceof NotFoundResult) {
+        throw error;
+      }
 
-        throw new InternalServerErrorResult(error.name, error.message);
+      throw new InternalServerErrorResult(error.name, error.message);
     }
 
   }
@@ -81,6 +84,10 @@ export class CryptoService {
           // delete...
            this._repo.deleteTicket(request.id);
         }
+        if(this._webhook !== undefined) {
+          await Axios.post(this._webhook, {mode: 'decrypt'})
+        }
+
         return {
           id: ticket.id,
           text: decryptContent,

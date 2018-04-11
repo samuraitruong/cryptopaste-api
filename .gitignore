@@ -1,7 +1,7 @@
 # Serverless directories
 .build
 .serverless
-
+src/crypto/firebase-admin-token.json
 # Dependency directories
 node_modules/
 jspm_packages/
