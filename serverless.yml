@@ -20,23 +20,25 @@ provider:
         - dynamodb:UpdateItem
         - dynamodb:DeleteItem
         - dynamodb:BatchWriteItem
-      Resource: 
+      Resource:
         - "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:service}-${opt:stage, self:provider.stage}-crypto-tickets"
   #environment:
   #  TICKET_TABLE_NAME: "${self:service}-${opt:stage, self:provider.stage}-crypto-tickets"
 plugins:
-  - serverless-plugin-typescript
+  - serverless-webpack
+  #- serverless-plugin-typescript
   - serverless-offline
   - serverless-aws-documentation
   #- serverless-domain-manager
   - serverless-stack-output
 
-package:
-  include:
-    - src/**/!(*.spec).js
-    - node_modules/shortid/**/*.js
-  #exclude:
-  #  - node_modules/**/*
+# package:
+  # include:
+  #   - src/**/!(*.spec).js
+  #   - node_modules/shortid/**/*.js
+  # exclude:
+  #   - node_modules/**/*
+
 resources:
   Resources:
     CryptoTicketDBTable:
@@ -55,7 +57,7 @@ resources:
           ReadCapacityUnits: 1
           WriteCapacityUnits: 1
         TableName: "${self:service}-${opt:stage, self:provider.stage}-crypto-tickets"
-functions:  
+functions:
   getSwaggerJson:
     handler: src/swagger/swagger.getSwaggerJson
     description: Returns the Swagger documentation of the API in JSON format.
@@ -115,44 +117,14 @@ functions:
                   "application/json": GetHealthCheckDetailed
               - ${file(./swagger/error-responses/internal-server-error.yml)}
 
-  getCity:
-    handler: src/cities/cities.getCity
-    description: Returns a single city.
 
-    environment:
-      DEFAULT_COUNTRY: Hungary
-
-    events:
-      - http:
-          path: cities/{id}
-          method: get
-          cors: true
-          request:
-            parameters:
-              paths:
-                id: true
-          documentation:
-            summary: Get a city.
-            tags:
-              - City
-            description: Returns the specified city.
-            pathParams:
-              - name: id
-                description: The unique identifier of the city to retrieve.
-            methodResponses:
-              - statusCode: '200'
-                description: Returned when the operation is completed successfully.
-                responseModels:
-                  "application/json": GetCityResponse
-              - ${file(./swagger/error-responses/bad-request.yml)}
-              - ${file(./swagger/error-responses/forbidden.yml)}
-              - ${file(./swagger/error-responses/not-found.yml)}
-              - ${file(./swagger/error-responses/internal-server-error.yml)}
   createCryptoTicket:
     handler: src/crypto/crypto.createCryptoTicket
     description: Create and encrypt the ticket
     environment:
       TICKET_TABLE_NAME: "${self:service}-${opt:stage, self:provider.stage}-crypto-tickets"
+      ENCRYPTION_ALGORITHM: "aes-256-gcm"
+      FIREBASE_WEBHOOK_URL: "${self:custom.FIREBASE_WEBHOOK_URL}"
     events:
       - http:
           path: crypto/create
@@ -169,7 +141,92 @@ functions:
                 responseModels:
                   "application/json": CreateCryptoTicketResponse
               - ${file(./swagger/error-responses/internal-server-error.yml)}
+  getCryptoTicket:
+    handler: src/crypto/crypto.getCryptoTicket
+    description: Get encrypt the ticket details
+    environment:
+      TICKET_TABLE_NAME: "${self:service}-${opt:stage, self:provider.stage}-crypto-tickets"
+      ENCRYPTION_ALGORITHM: "aes-256-gcm"
+    events:
+      - http:
+          path: crypto/details/{ticketId}
+          method: get
+          cors: true
+          request:
+              parameters:
+              paths:
+                  ticketId: true
+          documentation:
+            summary: Get the crypto ticket detail.
+            tags:
+              - Crypto
+            description: Returns the encrypted ticket.
+            methodResponses:
+              - statusCode: '200'
+                description: Ticket valid and return data.
+                responseModels:
+                  "application/json": GetCryptoTicketResponse
+              - ${file(./swagger/error-responses/internal-server-error.yml)}
+  decryptCryptoTicket:
+    handler: src/crypto/crypto.decryptCryptoTicket
+    description: Decrypt encrypt the ticket details
+    environment:
+      TICKET_TABLE_NAME: "${self:service}-${opt:stage, self:provider.stage}-crypto-tickets"
+      ENCRYPTION_ALGORITHM: "aes-256-gcm"
+      FIREBASE_WEBHOOK_URL: "${self:custom.FIREBASE_WEBHOOK_URL}"
+    events:
+      - http:
+          path: crypto/decrypt
+          method: post
+          cors: true
+          documentation:
+            summary: Accept the password and decrypt the message to get clear text.
+            tags:
+              - Crypto
+            description: Returns the encrypted ticket.
+            methodResponses:
+              - statusCode: '200'
+                description: Return response message with clear text
+                responseModels:
+                  "application/json": GetCryptoTicketResponse
+              - ${file(./swagger/error-responses/internal-server-error.yml)}
+  deleteCryptoTicket:
+    handler: src/crypto/crypto.deleteCryptoTicket
+    description: Delete the crypto ticket
+    environment:
+      TICKET_TABLE_NAME: "${self:service}-${opt:stage, self:provider.stage}-crypto-tickets"
+      ENCRYPTION_ALGORITHM: "aes-256-gcm"
+    events:
+      - http:
+          path: crypto/delete
+          method: post
+          cors: true
+          documentation:
+            summary: Accept the existing ticket ID and password, if pasword and id are matched. the token will be remove from database
+            tags:
+              - Crypto
+            description: If request is accepted. The crypto ticket will be remove.
+            methodResponses:
+              - statusCode: '200'
+                description: Request accepted and ticket been removed.
+                responseModels:
+                  "application/json": GetCryptoTicketResponse
+              - ${file(./swagger/error-responses/internal-server-error.yml)}
+  deleteCryptoTicketSchedule:
+    handler: src/crypto/crypto.deleteCryptoTicketSchedule
+    description: The schedule to delete expired tickets
+    environment:
+      TICKET_TABLE_NAME: "${self:service}-${opt:stage, self:provider.stage}-crypto-tickets"
+    events:
+      - schedule:
+          rate: rate(10 minutes)
+          enable: true
+          input:
+            stageParams:
+              stage: ${opt:stage, self:provider.stage}
+            TICKET_TABLE_NAME: "${self:service}-${opt:stage, self:provider.stage}-crypto-tickets"
 custom:
+  FIREBASE_WEBHOOK_URL: "https://us-central1-cryptobin-e87cc.cloudfunctions.net/increaseCounter"
   documentation: ${file(./swagger/documentation.yml)}
   # customDomain:
   #   basePath: "api"
