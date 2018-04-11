@@ -65,7 +65,7 @@ export class CryptoController {
   public deleteCryptoTicketSchedule: ApiHandler = async (event: any, context: ApiContext, callback: ApiCallback): Promise<void> => {
     try {
       const tableName :string = <string>event.TICKET_TABLE_NAME
-      const service = new CryptoService(new CryptoRepository(tableName), null, null);
+      const service = new CryptoService(undefined, new CryptoRepository(tableName), null, null);
       await service.deleteCryptoTicketSchedule();
     } catch (error) {
       console.log(error);

@@ -1,6 +1,5 @@
 import { AWSError } from 'aws-sdk'
 import { generate } from 'shortid'
-import * as fbAdmin from 'firebase-admin'
 
 import { ErrorCode } from '../../shared/error-codes';
 import { ConfigurationErrorResult, ForbiddenResult, InternalServerErrorResult, NotFoundResult } from '../../shared/errors';
@@ -8,11 +7,9 @@ import { CreateCryptoTicketResult, CreateCryptoTicketRequest, GetCryptoTicketRes
 import { CryptoRepository } from './crypto.repository';
 import { Encryption } from '../services/encryption'
 import { Util } from '../services/util'
-
-
-
+import Axios from 'axios'
 export class CryptoService {
-  public constructor(private _repo: CryptoRepository,
+  public constructor(private _webhook:string, private _repo: CryptoRepository,
     private _encryption : Encryption,
     private _env: NodeJS.ProcessEnv) {
   }
@@ -27,33 +24,13 @@ export class CryptoService {
     ticket.iv = encryptResponse.iv;
     ticket.tag = encryptResponse.tag;
     ticket.text = encryptResponse.content;
-    try{
+    try {
         await this._repo.createTicket(ticket);
-
-        // Fetch the service account key JSON file contents
-        const serviceAccount = require("./firebase-admin-token.json");
-
-        // Initialize the app with a service account, granting admin privileges
-        fbAdmin.initializeApp({
-          credential: fbAdmin.credential.cert(serviceAccount),
-          databaseURL: 'https://cryptobin-e87cc.firebaseio.com',
-        }, ticket.id);
-
-        // As an admin, the app has access to read and write all data, regardless of Security Rules
-        const db = fbAdmin.database();
-        const ref = db.ref("/");
-        let oldvalue = 0;
-        ref.once("value", function(snapshot) {
-          console.log(snapshot.val());
-          oldvalue = snapshot.val().submit
-          console.log('old value', oldvalue)
-          ref.set({submit:oldvalue+1}, function(err) {
-            console.log(err)
-          })
-        });
+        if(this._webhook !== undefined) {
+          await Axios.post(this._webhook, {mode: 'encrypt'})
+        }
         return {id: ticket.id , expires: ticket.expires};
-    }
-    catch(error) {
+    }catch(error) {
       console.log(error)
       if (error.code === 'AccessDeniedException') {
         throw new ForbiddenResult(ErrorCode.MissingPermission, error.message);
@@ -107,6 +84,10 @@ export class CryptoService {
           // delete...
            this._repo.deleteTicket(request.id);
         }
+        if(this._webhook !== undefined) {
+          await Axios.post(this._webhook, {mode: 'decrypt'})
+        }
+
         return {
           id: ticket.id,
           text: decryptContent,
