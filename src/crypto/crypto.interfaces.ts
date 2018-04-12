@@ -17,7 +17,8 @@ export interface CryptoTicket {
     oneTime: boolean,
     iv:any;
     tag:any,
-    created: number
+    created: number,
+    ipAddresses: string[]
 }
 export interface CreateCryptoTicketRequest extends CryptoTicket {
     password: string
@@ -31,5 +32,5 @@ export interface GetCryptoTicketResponse {
     oneTime?: boolean
 }
 export interface DeleteCryptoTicketRequest extends DecryptCryptoTicketRequest {
-    
+
 }

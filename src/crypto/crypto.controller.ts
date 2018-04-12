@@ -39,8 +39,9 @@ export class CryptoController {
       const ticketId : string = event.pathParameters.ticketId;
 
       try{
-        const result = await this._service.getCryptoTicket(ticketId);
-        if(result == undefined) {
+        console.log('ip address', event.requestContext.identity.sourceIp)
+        const result = await this._service.getCryptoTicket(ticketId, event.requestContext.identity.sourceIp);
+        if(result === undefined) {
             return ResponseBuilder.notFound(ErrorCode.MissingRecord, 'Could not find item ID: ' + ticketId , callback);
         }
         return ResponseBuilder.ok<GetCryptoTicketResponse>(result, callback);
@@ -50,9 +51,8 @@ export class CryptoController {
         if (error.code === ErrorCode.MissingRecord) {
             return ResponseBuilder.notFound(error.code, error.description, callback);
         }
-
-        if (error instanceof ForbiddenResult) {
-            return ResponseBuilder.forbidden(error.code, error.description, callback);
+        if (error.code === ErrorCode.MissingPermission) {
+          return ResponseBuilder.forbidden(error.code, error.description, callback);
         }
 
         if (error instanceof ConfigurationErrorResult) {

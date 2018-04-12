@@ -42,19 +42,25 @@ export class CryptoService {
 
   }
 
-  public async getCryptoTicket(ticketId: string): Promise<GetCryptoTicketResponse> {
-    // generate and encrypt
+  public async getCryptoTicket(ticketId: string, ip:string): Promise<GetCryptoTicketResponse> {
     try{
-        const ticket = await this._repo.getTicket(ticketId);
-        console.log('ticket return', ticket)
+        const ticket = await this._repo.getTicket(ticketId)
         if(!ticket) throw new NotFoundResult(ErrorCode.MissingRecord, 'Could not find the crypto ticket with ID : ' + ticketId);
+
+        if(ticket && ticket.ipAddresses && ticket.ipAddresses.length > 0 && ticket.ipAddresses.indexOf(ip) < 0) {
+          throw new ForbiddenResult(ErrorCode.MissingPermission, 'This is ip restricted ticket, Your IP is not allow to access this ticket');
+        }
+        if(ticket.expires < Util.unix()) {
+          await this._repo.deleteTicket(ticketId);
+          return undefined
+        }
         return {
-          id: ticket.id,
-          text: ticket.text,
-          expires: ticket.expires,
-          expired: false,
           created: ticket.created,
-          oneTime: ticket.oneTime
+          expired: false,
+          expires: ticket.expires,
+          id: ticket.id,
+          oneTime: ticket.oneTime,
+          text: ticket.text,
         };
     }
     catch(error) {
@@ -63,7 +69,7 @@ export class CryptoService {
           throw new ForbiddenResult(ErrorCode.MissingPermission, error.message);
         }
 
-        if (error.code == ErrorCode.MissingRecord) {
+        if (error.code == ErrorCode.MissingRecord || error.code == ErrorCode.MissingPermission) {
           throw error;
         }
 
@@ -76,6 +82,11 @@ export class CryptoService {
     try{
         const ticket = await this._repo.getTicket(request.id);
         if(!ticket) throw new NotFoundResult(ErrorCode.MissingRecord, 'Could not find the crypto ticket with ID : ' + request.id);
+
+        if(ticket && ticket.ipAddresses && ticket.ipAddresses.length > 0 && ticket.ipAddresses.indexOf(ip) < 0) {
+          throw new ForbiddenResult(ErrorCode.MissingPermission, 'This is ip restricted ticket, Your IP is not allow to access this ticket');
+        }
+
         const decryptContent = this._encryption.decrypt(ticket.text, request.password, ticket.iv, ticket.tag);
         if(ticket.oneTime) {
           // delete...
@@ -96,7 +107,7 @@ export class CryptoService {
           throw new ForbiddenResult(ErrorCode.MissingPermission, error.message);
         }
 
-        if (error instanceof NotFoundResult) {
+        if (error.code == ErrorCode.MissingRecord || error.code == ErrorCode.MissingPermission) {
           throw error;
         }
 
