@@ -1,26 +1,12 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
-    "target": "es5",
-    "lib": [ 
-      "es2015"
-    ],
-    "moduleResolution": "node",
-    "rootDir": "./",
     "sourceMap": true,
-    "allowJs": true,
-    "noImplicitAny": true,
-    "noUnusedLocals": true,
-    "noImplicitThis": true,
-    "strictNullChecks": false,
-    "noImplicitReturns": true,
-    "preserveConstEnums": true,
-    "suppressImplicitAnyIndexErrors": true,
-    "forceConsistentCasingInFileNames": true,
-    "strict": true
-  },
-  "exclude": [ 
-    "node_modules\\aws-sdk",
-    "coverage"
-   ]
+    "lib": [
+      "es5",
+      "es6",
+      "dom",
+      "es2015",
+      "esnext.asynciterable"
+    ]
+  }
 }

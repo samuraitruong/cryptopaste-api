@@ -25,20 +25,20 @@ provider:
   #environment:
   #  TICKET_TABLE_NAME: "${self:service}-${opt:stage, self:provider.stage}-crypto-tickets"
 plugins:
-  - serverless-plugin-typescript
-  #- serverless-plugin-include-dependencies
+  - serverless-webpack
+  #- serverless-plugin-typescript
   - serverless-offline
   - serverless-aws-documentation
   #- serverless-domain-manager
   - serverless-stack-output
 
-package:
-  include:
-    - src/**/!(*.spec).js
-    - node_modules/shortid/**/*.js
-    #- node_modules/moment/**/*.js
-  exclude:
-    - node_modules/**/*
+# package:
+  # include:
+  #   - src/**/!(*.spec).js
+  #   - node_modules/shortid/**/*.js
+  # exclude:
+  #   - node_modules/**/*
+
 resources:
   Resources:
     CryptoTicketDBTable:
@@ -124,6 +124,7 @@ functions:
     environment:
       TICKET_TABLE_NAME: "${self:service}-${opt:stage, self:provider.stage}-crypto-tickets"
       ENCRYPTION_ALGORITHM: "aes-256-gcm"
+      FIREBASE_WEBHOOK_URL: "${self:custom.FIREBASE_WEBHOOK_URL}"
     events:
       - http:
           path: crypto/create
@@ -172,6 +173,7 @@ functions:
     environment:
       TICKET_TABLE_NAME: "${self:service}-${opt:stage, self:provider.stage}-crypto-tickets"
       ENCRYPTION_ALGORITHM: "aes-256-gcm"
+      FIREBASE_WEBHOOK_URL: "${self:custom.FIREBASE_WEBHOOK_URL}"
     events:
       - http:
           path: crypto/decrypt
@@ -224,6 +226,7 @@ functions:
               stage: ${opt:stage, self:provider.stage}
             TICKET_TABLE_NAME: "${self:service}-${opt:stage, self:provider.stage}-crypto-tickets"
 custom:
+  FIREBASE_WEBHOOK_URL: "https://us-central1-cryptobin-e87cc.cloudfunctions.net/increaseCounter"
   documentation: ${file(./swagger/documentation.yml)}
   # customDomain:
   #   basePath: "api"

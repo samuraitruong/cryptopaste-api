@@ -11,10 +11,10 @@ export class CryptoController {
   }
 
   public createCryptoJson: ApiHandler = async (event: ApiEvent, context: ApiContext, callback: ApiCallback): Promise<void> => {
-      const model : CreateCryptoTicketRequest = JSON.parse(<string>event.body);
+      const model: CreateCryptoTicketRequest = JSON.parse(<string> event.body);
 
       try{
-        const result = await this._service.createCryptoTicket(model);
+        const result: CreateCryptoTicketResult = await this._service.createCryptoTicket(model);
         return ResponseBuilder.ok<CreateCryptoTicketResult>(result, callback);
       }
       catch(error) {
@@ -65,21 +65,21 @@ export class CryptoController {
   public deleteCryptoTicketSchedule: ApiHandler = async (event: any, context: ApiContext, callback: ApiCallback): Promise<void> => {
     try {
       const tableName :string = <string>event.TICKET_TABLE_NAME
-      const service = new CryptoService(new CryptoRepository(tableName), null, null)
+      const service = new CryptoService(undefined, new CryptoRepository(tableName), null, null);
       await service.deleteCryptoTicketSchedule();
     } catch (error) {
-      console.log(error)
+      console.log(error);
     }
   }
 
   public decryptCryptoJson: ApiHandler = async (event: ApiEvent, context: ApiContext, callback: ApiCallback): Promise<void> => {
     const model: DecryptCryptoTicketRequest = JSON.parse(<string>event.body);
 
-    try{
+    try {
         const result = await this._service.decryptCryptoTicket(model);
         return ResponseBuilder.ok<GetCryptoTicketResponse>(result, callback);
     } catch(error) {
-      console.log(error)
+      console.log(error);
       if (error instanceof NotFoundResult) {
           return ResponseBuilder.notFound(error.code, error.description, callback);
       }
@@ -96,12 +96,12 @@ export class CryptoController {
     }
   }
   public deleteCryptoJson: ApiHandler = async (event: ApiEvent, context: ApiContext, callback: ApiCallback): Promise<void> => {
-    const model: DeleteCryptoTicketRequest = JSON.parse(<string>event.body);
+    const model: DeleteCryptoTicketRequest = JSON.parse(<string> event.body);
 
-    try{
+    try {
         const result = await this._service.deleteCryptoTicket(model);
         return ResponseBuilder.ok<GetCryptoTicketResponse>(result, callback);
-    } catch(error) {
+    } catch (error) {
         console.log(error);
         if (error.code === ErrorCode.MissingRecord) {
             return ResponseBuilder.notFound(error.code, error.description, callback);
