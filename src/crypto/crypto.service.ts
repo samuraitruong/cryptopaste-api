@@ -80,7 +80,7 @@ export class CryptoService {
     }
   }
 
-  public async decryptCryptoTicket(request: DecryptCryptoTicketRequest): Promise<GetCryptoTicketResponse> {
+  public async decryptCryptoTicket(request: DecryptCryptoTicketRequest, ip: string): Promise<GetCryptoTicketResponse> {
     // generate and encrypt
     try{
         const ticket = await this._repo.getTicket(request.id);

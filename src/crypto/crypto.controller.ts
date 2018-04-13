@@ -76,7 +76,7 @@ export class CryptoController {
     const model: DecryptCryptoTicketRequest = JSON.parse(<string>event.body);
 
     try {
-        const result = await this._service.decryptCryptoTicket(model);
+        const result = await this._service.decryptCryptoTicket(model, event.requestContext.identity.sourceIp);
         return ResponseBuilder.ok<GetCryptoTicketResponse>(result, callback);
     } catch(error) {
       console.log(error);

@@ -38,7 +38,17 @@ plugins:
   #   - node_modules/shortid/**/*.js
   # exclude:
   #   - node_modules/**/*
-
+custom:
+  FIREBASE_WEBHOOK_URL: "https://us-central1-cryptobin-e87cc.cloudfunctions.net/increaseCounter"
+  documentation: ${file(./swagger/documentation.yml)}
+  # customDomain:
+  #   basePath: "api"
+  #   domainName: serverless-sample.balassy.me
+  #   certificateName: serverless-sample.balassy.me
+  #   stage: ${self:provider.stage}
+  #   createRoute53Record: true
+  output:
+    file: .serverless/output.json
 resources:
   Resources:
     CryptoTicketDBTable:
@@ -225,14 +235,3 @@ functions:
             stageParams:
               stage: ${opt:stage, self:provider.stage}
             TICKET_TABLE_NAME: "${self:service}-${opt:stage, self:provider.stage}-crypto-tickets"
-custom:
-  FIREBASE_WEBHOOK_URL: "https://us-central1-cryptobin-e87cc.cloudfunctions.net/increaseCounter"
-  documentation: ${file(./swagger/documentation.yml)}
-  # customDomain:
-  #   basePath: "api"
-  #   domainName: serverless-sample.balassy.me
-  #   certificateName: serverless-sample.balassy.me
-  #   stage: ${self:provider.stage}
-  #   createRoute53Record: true
-  output:
-    file: .serverless/output.json
