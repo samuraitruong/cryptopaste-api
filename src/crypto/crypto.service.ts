@@ -8,6 +8,7 @@ import { CryptoRepository } from './crypto.repository';
 import { Encryption } from '../services/encryption'
 import { Util } from '../services/util'
 import Axios from 'axios'
+import { EncryptionResponse } from '../services/encryption.interfaces';
 export class CryptoService {
   public constructor(private _webhook:string, private _repo: CryptoRepository,
     private _encryption : Encryption,
@@ -18,12 +19,16 @@ export class CryptoService {
     // generate and encrypt
     ticket.id  = generate();
 
-    const encryptResponse = this._encryption.encrypt(ticket.text, ticket.password);
-    delete ticket.password;
+    if(!ticket.clientMode) {
+      const encryptResponse: EncryptionResponse = this._encryption.encrypt(ticket.text, ticket.password);
+      delete ticket.password;
+      ticket.iv = encryptResponse.iv;
+      ticket.tag = encryptResponse.tag;
+      ticket.text = encryptResponse.content;
+    }
+
     ticket.expires =  Util.unix() + ticket.expires*60
-    ticket.iv = encryptResponse.iv;
-    ticket.tag = encryptResponse.tag;
-    ticket.text = encryptResponse.content;
+
     try {
         await this._repo.createTicket(ticket);
         if(this._webhook !== undefined) {
@@ -57,14 +62,22 @@ export class CryptoService {
           await this._repo.deleteTicket(ticketId);
           return undefined
         }
-        return {
+        const response = {
+          clientMode: ticket.clientMode,
           created: ticket.created,
           expired: false,
           expires: ticket.expires,
           id: ticket.id,
           oneTime: ticket.oneTime,
           text: ticket.text,
+          iv: undefined,
+          tag: undefined
         };
+        if(response.clientMode) {
+          response.iv = ticket.iv;
+          response.tag = ticket.tag;
+        }
+        return response;
     }
     catch(error) {
       console.log(error)
@@ -125,9 +138,11 @@ export class CryptoService {
   public async deleteCryptoTicket(request: DeleteCryptoTicketRequest): Promise<GetCryptoTicketResponse> {
     try{
         const ticket = await this._repo.getTicket(request.id);
-         if(!ticket) throw new NotFoundResult(ErrorCode.MissingRecord, 'Could not find the crypto ticket with ID : ' + request.id);
-        const decryptContent = this._encryption.decrypt(ticket.text, request.password, ticket.iv, ticket.tag);
-
+        if(!ticket) throw new NotFoundResult(ErrorCode.MissingRecord, 'Could not find the crypto ticket with ID : ' + request.id);
+        let decryptContent: string = ''
+        if(!ticket.clientMode){
+          decryptContent = this._encryption.decrypt(ticket.text, request.password, ticket.iv, ticket.tag);
+        }
         this._repo.deleteTicket(request.id);
 
         return {

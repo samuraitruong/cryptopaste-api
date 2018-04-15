@@ -13,11 +13,11 @@ export class CryptoController {
   public createCryptoJson: ApiHandler = async (event: ApiEvent, context: ApiContext, callback: ApiCallback): Promise<void> => {
       const model: CreateCryptoTicketRequest = JSON.parse(<string> event.body);
 
-      try{
+      try {
+
         const result: CreateCryptoTicketResult = await this._service.createCryptoTicket(model);
         return ResponseBuilder.ok<CreateCryptoTicketResult>(result, callback);
-      }
-      catch(error) {
+      } catch (error) {
         console.log(error)
         if (error.code == ErrorCode.MissingRecord) {
             return ResponseBuilder.notFound(error.code, error.description, callback);

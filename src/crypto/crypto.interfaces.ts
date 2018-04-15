@@ -18,18 +18,21 @@ export interface CryptoTicket {
     iv:any;
     tag:any,
     created: number,
-    ipAddresses: string[]
+    ipAddresses: string[],
+    clientMode: boolean
 }
 export interface CreateCryptoTicketRequest extends CryptoTicket {
     password: string
 }
 export interface GetCryptoTicketResponse {
-    id:string,
-    text:string,
-    expires:number,
-    created: number,
-    expired: boolean,
-    oneTime?: boolean
+    id: string;
+    text: string;
+    expires: number;
+    created: number;
+    expired: boolean;
+    oneTime?: boolean;
+    iv?: string;
+    key?: string;
 }
 export interface DeleteCryptoTicketRequest extends DecryptCryptoTicketRequest {
 
