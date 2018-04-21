@@ -22,6 +22,20 @@ provider:
         - dynamodb:BatchWriteItem
       Resource:
         - "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:service}-${opt:stage, self:provider.stage}-crypto-tickets"
+    - Effect : Allow
+      Action:
+        - s3:PutObject
+        - s3:GetObject
+        - s3:GetObjectAcl
+        - s3:DeleteObject
+        - s3:PutObjectAcl
+      Resource:
+        - "arn:aws:s3:::${self:custom.TextEncryptedContentBucketName}/*"
+    - Effect : Allow
+      Action:
+        - s3:ListBucket
+      Resource:
+          - "arn:aws:s3:::${self:custom.TextEncryptedContentBucketName}"
   #environment:
   #  TICKET_TABLE_NAME: "${self:service}-${opt:stage, self:provider.stage}-crypto-tickets"
 plugins:
@@ -47,6 +61,7 @@ custom:
   #   certificateName: serverless-sample.balassy.me
   #   stage: ${self:provider.stage}
   #   createRoute53Record: true
+  TextEncryptedContentBucketName: "${self:service}-${opt:stage, self:provider.stage}-encrypted-text"
   output:
     file: .serverless/output.json
 resources:
@@ -67,6 +82,25 @@ resources:
           ReadCapacityUnits: 1
           WriteCapacityUnits: 1
         TableName: "${self:service}-${opt:stage, self:provider.stage}-crypto-tickets"
+    TextEncryptedContentBucket:
+      Type: 'AWS::S3::Bucket'
+      Properties:
+        BucketName: "${self:custom.TextEncryptedContentBucketName}"
+        AccessControl: "PublicRead"
+        CorsConfiguration:
+          CorsRules:
+             -
+              AllowedHeaders:
+                - "*"
+              AllowedMethods:
+                - "GET"
+              AllowedOrigins:
+                - "*"
+              ExposedHeaders:
+                - "Date"
+              Id: "myCORSRuleId1"
+              MaxAge: "3600"
+
 functions:
   getSwaggerJson:
     handler: src/swagger/swagger.getSwaggerJson
@@ -135,6 +169,7 @@ functions:
       TICKET_TABLE_NAME: "${self:service}-${opt:stage, self:provider.stage}-crypto-tickets"
       ENCRYPTION_ALGORITHM: "aes-256-gcm"
       FIREBASE_WEBHOOK_URL: "${self:custom.FIREBASE_WEBHOOK_URL}"
+      CRYPTO_TICKET_BUCKET_NAME: "${self:custom.TextEncryptedContentBucketName}"
     events:
       - http:
           path: crypto/create
@@ -184,6 +219,7 @@ functions:
       TICKET_TABLE_NAME: "${self:service}-${opt:stage, self:provider.stage}-crypto-tickets"
       ENCRYPTION_ALGORITHM: "aes-256-gcm"
       FIREBASE_WEBHOOK_URL: "${self:custom.FIREBASE_WEBHOOK_URL}"
+      CRYPTO_TICKET_BUCKET_NAME: "${self:custom.TextEncryptedContentBucketName}"
     events:
       - http:
           path: crypto/decrypt
@@ -206,6 +242,7 @@ functions:
     environment:
       TICKET_TABLE_NAME: "${self:service}-${opt:stage, self:provider.stage}-crypto-tickets"
       ENCRYPTION_ALGORITHM: "aes-256-gcm"
+      CRYPTO_TICKET_BUCKET_NAME: "${self:custom.TextEncryptedContentBucketName}"
     events:
       - http:
           path: crypto/delete

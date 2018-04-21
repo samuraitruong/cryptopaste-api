@@ -1,5 +1,5 @@
 export interface CreateCryptoTicketResult {
-    id: String,
+    id: String;
     expires: number
 }
 
@@ -7,22 +7,23 @@ export interface CryptoSetting {
     TICKET_TABLE_NAME: string
 }
 export interface DecryptCryptoTicketRequest {
-    id:string,
+    id:string;
     password:string
 }
 export interface CryptoTicket {
-    id:string,
-    text:string,
-    expires:number,
-    oneTime: boolean,
+    id:string;
+    text:string;
+    expires:number;
+    oneTime: boolean;
     iv:any;
-    tag:any,
-    created: number,
-    ipAddresses: string[],
-    clientMode: boolean
+    tag:any;
+    created: number;
+    ipAddresses: string[];
+    clientMode: boolean;
+    s3: boolean;
 }
 export interface CreateCryptoTicketRequest extends CryptoTicket {
-    password: string
+    password: string;
 }
 export interface GetCryptoTicketResponse {
     id: string;
@@ -32,7 +33,9 @@ export interface GetCryptoTicketResponse {
     expired: boolean;
     oneTime?: boolean;
     iv?: string;
-    key?: string;
+    tag?: string;
+    clientMode?: boolean;
+    s3?: boolean
 }
 export interface DeleteCryptoTicketRequest extends DecryptCryptoTicketRequest {
 
